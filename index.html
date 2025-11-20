@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game Boy Color Emulator</title>
+    <link rel="stylesheet" href="css/gbc.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Game Boy Color Container -->
+        <div id="gbc-container">
+            <!-- Screen Area -->
+            <div id="gbc-screen-area">
+                <canvas id="emulator-canvas" width="160" height="144"></canvas>
+                <div id="power-led"></div>
+            </div>
+
+            <!-- Nintendo Logo -->
+            <div id="gbc-logo">
+                <span class="logo-text">GAME BOY</span>
+                <span class="logo-color">COLOR</span>
+            </div>
+
+            <!-- D-Pad -->
+            <div id="dpad">
+                <button class="dpad-btn" id="btn-up" data-key="up">
+                    <span class="arrow">▲</span>
+                </button>
+                <button class="dpad-btn" id="btn-left" data-key="left">
+                    <span class="arrow">◀</span>
+                </button>
+                <button class="dpad-btn" id="btn-right" data-key="right">
+                    <span class="arrow">▶</span>
+                </button>
+                <button class="dpad-btn" id="btn-down" data-key="down">
+                    <span class="arrow">▼</span>
+                </button>
+                <div class="dpad-center"></div>
+            </div>
+
+            <!-- A/B Buttons -->
+            <div id="action-buttons">
+                <button class="action-btn" id="btn-b" data-key="b">
+                    <span class="btn-label">B</span>
+                </button>
+                <button class="action-btn" id="btn-a" data-key="a">
+                    <span class="btn-label">A</span>
+                </button>
+            </div>
+
+            <!-- Start/Select Buttons -->
+            <div id="special-buttons">
+                <button class="special-btn" id="btn-select" data-key="select">
+                    <span class="btn-label">SELECT</span>
+                </button>
+                <button class="special-btn" id="btn-start" data-key="start">
+                    <span class="btn-label">START</span>
+                </button>
+            </div>
+
+            <!-- Settings Button -->
+            <button id="settings-btn" title="Settings">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 6a4 4 0 100 8 4 4 0 000-8zm0 6a2 2 0 110-4 2 2 0 010 4z"/>
+                    <path d="M11.5 2h-3l-.5 1.5c-.5.2-1 .4-1.4.7L5 3.5 3.5 5l.7 1.6c-.3.4-.5.9-.7 1.4L2 8.5v3l1.5.5c.2.5.4 1 .7 1.4L3.5 15 5 16.5l1.6-.7c.4.3.9.5 1.4.7L8.5 18h3l.5-1.5c.5-.2 1-.4 1.4-.7l1.6.7L16.5 15l-.7-1.6c.3-.4.5-.9.7-1.4L18 11.5v-3l-1.5-.5c-.2-.5-.4-1-.7-1.4L16.5 5 15 3.5l-1.6.7c-.4-.3-.9-.5-1.4-.7L11.5 2z"/>
+                </svg>
+            </button>
+
+            <!-- Speaker Holes -->
+            <div id="speaker">
+                <div class="speaker-line"></div>
+                <div class="speaker-line"></div>
+                <div class="speaker-line"></div>
+                <div class="speaker-line"></div>
+                <div class="speaker-line"></div>
+                <div class="speaker-line"></div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="close-btn" id="close-settings">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- ROM Loading -->
+                    <div class="setting-section">
+                        <h3>Load ROM</h3>
+                        <input type="file" id="rom-input" accept=".gb,.gbc">
+                        <button id="load-rom-btn" class="btn">Load ROM</button>
+                    </div>
+
+                    <!-- Save State Management -->
+                    <div class="setting-section">
+                        <h3>Save States</h3>
+                        <button id="save-state-btn" class="btn">Save State</button>
+                        <button id="load-state-btn" class="btn">Load State</button>
+                        <button id="download-state-btn" class="btn">Download State</button>
+                        <input type="file" id="state-input" accept=".sav" style="display: none;">
+                        <button id="upload-state-btn" class="btn">Upload State</button>
+                    </div>
+
+                    <!-- Controls -->
+                    <div class="setting-section">
+                        <h3>Controls</h3>
+                        <div class="control-info">
+                            <p><strong>Keyboard:</strong></p>
+                            <ul>
+                                <li>Arrow Keys - D-Pad</li>
+                                <li>Z - A Button</li>
+                                <li>X - B Button</li>
+                                <li>Enter - Start</li>
+                                <li>Shift - Select</li>
+                            </ul>
+                            <p><strong>Touch:</strong> Use on-screen buttons</p>
+                        </div>
+                    </div>
+
+                    <!-- Volume Control -->
+                    <div class="setting-section">
+                        <h3>Volume</h3>
+                        <input type="range" id="volume-slider" min="0" max="100" value="50">
+                        <span id="volume-value">50%</span>
+                    </div>
+
+                    <!-- Fullscreen -->
+                    <div class="setting-section">
+                        <h3>Display</h3>
+                        <button id="fullscreen-btn" class="btn">Toggle Fullscreen</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/emulator-core.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
