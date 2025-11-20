@@ -283,10 +283,18 @@
 
         const reader = new FileReader();
         reader.onload = function(event) {
-            const romData = event.target.result;
-            app.currentROM = romData;
+            const arrayBuffer = event.target.result;
 
-            console.log('ROM loaded:', file.name, romData.byteLength, 'bytes');
+            // Convert ArrayBuffer to binary string (GameBoy-Online expects this format)
+            const bytes = new Uint8Array(arrayBuffer);
+            let binaryString = '';
+            for (let i = 0; i < bytes.length; i++) {
+                binaryString += String.fromCharCode(bytes[i]);
+            }
+
+            app.currentROM = binaryString;
+
+            console.log('ROM loaded:', file.name, arrayBuffer.byteLength, 'bytes');
 
             try {
                 // Initialize emulator with ROM using GameBoy-Online's start() function
@@ -310,7 +318,7 @@
                     }
 
                     // Start emulation
-                    start(app.canvas, romData);
+                    start(app.canvas, binaryString);
 
                     // Update UI
                     romStatus.textContent = `Loaded: ${file.name}`;
