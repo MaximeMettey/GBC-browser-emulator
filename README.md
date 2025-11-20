@@ -85,6 +85,12 @@ GBC-browser-emulator/
 ├── css/
 │   └── gbc.css            # Styles de l'interface GBC
 ├── js/
+│   ├── other/
+│   │   ├── base64.js      # Utilitaires base64
+│   │   ├── resampler.js   # Resampler audio
+│   │   └── XAudioServer.js # Serveur audio
+│   ├── GameBoyCore.js     # Cœur de l'émulateur
+│   ├── GameBoyIO.js       # I/O et gestion ROM
 │   ├── emulator-core.js   # Intégration de l'émulateur
 │   └── app.js             # Logique de l'application
 └── README.md              # Documentation
@@ -95,7 +101,7 @@ GBC-browser-emulator/
 - **HTML5 Canvas** - Rendu graphique
 - **CSS3** - Interface réaliste avec effets transparents
 - **JavaScript (ES6+)** - Logique de l'application
-- **GameBoy-Online** - Émulateur GBC éprouvé (via CDN)
+- **GameBoy-Online** - Émulateur GBC éprouvé (embarqué localement)
 - **LocalStorage API** - Sauvegarde persistante
 - **Fullscreen API** - Mode plein écran
 - **File API** - Import/Export de ROMs et sauvegardes
@@ -119,7 +125,7 @@ L'émulateur est optimisé pour les appareils mobiles:
 ## 🐛 Dépannage
 
 **L'émulateur ne se charge pas:**
-- Vérifiez votre connexion internet (l'émulateur est chargé depuis un CDN)
+- Assurez-vous que tous les fichiers JS sont présents dans le dossier js/
 - Ouvrez la console du navigateur (F12) pour voir les erreurs
 - Essayez de rafraîchir la page
 

@@ -7,16 +7,13 @@
 (function() {
     'use strict';
 
-    // CDN base URL for GameBoy-Online
-    const CDN_BASE = 'https://cdn.jsdelivr.net/gh/taisel/GameBoy-Online@master/js/';
-
-    // Required scripts in order
+    // Local paths for GameBoy-Online emulator
     const scripts = [
-        'other/base64.js',
-        'other/resampler.js',
-        'other/XAudioServer.js',
-        'GameBoyCore.js',
-        'GameBoyIO.js'
+        'js/other/base64.js',
+        'js/other/resampler.js',
+        'js/other/XAudioServer.js',
+        'js/GameBoyCore.js',
+        'js/GameBoyIO.js'
     ];
 
     let scriptsLoaded = 0;
@@ -46,7 +43,7 @@
     async function loadEmulatorScripts() {
         try {
             for (const script of scripts) {
-                await loadScript(CDN_BASE + script);
+                await loadScript(script);
             }
 
             console.log('✓ All emulator scripts loaded successfully!');
