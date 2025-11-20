@@ -173,81 +173,52 @@
         document.getElementById('state-input').addEventListener('change', uploadState);
     }
 
-    // Keyboard mapping for GameBoy-Online
+    // Keyboard mapping for GameBoy-Online (expects strings)
     const keyMap = {
-        'ArrowUp': 38,
-        'ArrowDown': 40,
-        'ArrowLeft': 37,
-        'ArrowRight': 39,
-        'KeyZ': 90,      // A
-        'KeyX': 88,      // B
-        'Enter': 13,     // Start
-        'Shift': 16      // Select
+        'ArrowUp': 'up',
+        'ArrowDown': 'down',
+        'ArrowLeft': 'left',
+        'ArrowRight': 'right',
+        'KeyZ': 'a',
+        'KeyX': 'b',
+        'Enter': 'start',
+        'ShiftLeft': 'select',
+        'ShiftRight': 'select'
     };
 
     function handleKeyDown(e) {
-        const keyCode = keyMap[e.code];
-        if (keyCode && typeof GameBoyKeyDown === 'function') {
+        const button = keyMap[e.code];
+        if (button && typeof GameBoyKeyDown === 'function') {
             e.preventDefault();
-            GameBoyKeyDown({ keyCode });
-
-            // Visual feedback
-            const buttonMap = {
-                38: 'up', 40: 'down', 37: 'left', 39: 'right',
-                90: 'a', 88: 'b', 13: 'start', 16: 'select'
-            };
-            const button = buttonMap[keyCode];
-            if (button) {
-                visualButtonPress(button);
-            }
+            GameBoyKeyDown(button);
+            visualButtonPress(button);
         }
     }
 
     function handleKeyUp(e) {
-        const keyCode = keyMap[e.code];
-        if (keyCode && typeof GameBoyKeyUp === 'function') {
+        const button = keyMap[e.code];
+        if (button && typeof GameBoyKeyUp === 'function') {
             e.preventDefault();
-            GameBoyKeyUp({ keyCode });
-
-            // Remove visual feedback
-            const buttonMap = {
-                38: 'up', 40: 'down', 37: 'left', 39: 'right',
-                90: 'a', 88: 'b', 13: 'start', 16: 'select'
-            };
-            const button = buttonMap[keyCode];
-            if (button) {
-                visualButtonRelease(button);
-            }
+            GameBoyKeyUp(button);
+            visualButtonRelease(button);
         }
     }
 
     function pressButton(button) {
         visualButtonPress(button);
 
-        // Send to emulator
-        const keyCodeMap = {
-            'up': 38, 'down': 40, 'left': 37, 'right': 39,
-            'a': 90, 'b': 88, 'start': 13, 'select': 16
-        };
-
-        const keyCode = keyCodeMap[button];
-        if (keyCode && typeof GameBoyKeyDown === 'function') {
-            GameBoyKeyDown({ keyCode });
+        // Send to emulator (GameBoy-Online expects string keys)
+        if (typeof GameBoyKeyDown === 'function') {
+            GameBoyKeyDown(button);
         }
     }
 
     function releaseButton(button) {
         visualButtonRelease(button);
 
-        // Send to emulator
-        const keyCodeMap = {
-            'up': 38, 'down': 40, 'left': 37, 'right': 39,
-            'a': 90, 'b': 88, 'start': 13, 'select': 16
-        };
-
-        const keyCode = keyCodeMap[button];
-        if (keyCode && typeof GameBoyKeyUp === 'function') {
-            GameBoyKeyUp({ keyCode });
+        // Send to emulator (GameBoy-Online expects string keys)
+        if (typeof GameBoyKeyUp === 'function') {
+            GameBoyKeyUp(button);
         }
     }
 
