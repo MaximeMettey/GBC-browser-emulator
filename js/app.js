@@ -291,9 +291,22 @@
             try {
                 // Initialize emulator with ROM using GameBoy-Online's start() function
                 if (typeof start === 'function') {
-                    // Clear any previous emulation
-                    if (typeof clearLastEmulation === 'function') {
-                        clearLastEmulation();
+                    // Clear any previous emulation (safely)
+                    try {
+                        if (typeof clearLastEmulation === 'function') {
+                            clearLastEmulation();
+                        } else if (window.gameboy) {
+                            // Manual cleanup if clearLastEmulation isn't available
+                            if (window.gbRunInterval) {
+                                clearInterval(window.gbRunInterval);
+                            }
+                            if (window.gameboy.stopEmulator !== undefined) {
+                                window.gameboy.stopEmulator |= 2;
+                            }
+                        }
+                    } catch (clearError) {
+                        console.warn('Could not clear previous emulation:', clearError);
+                        // Continue anyway
                     }
 
                     // Start emulation
