@@ -414,6 +414,36 @@
         }
     }
 
+    // Listen for fullscreen changes to add/remove class
+    document.addEventListener('fullscreenchange', () => {
+        const container = document.getElementById('gbc-container');
+        if (document.fullscreenElement) {
+            container.classList.add('is-fullscreen');
+        } else {
+            container.classList.remove('is-fullscreen');
+        }
+    });
+
+    // Handle webkit browsers
+    document.addEventListener('webkitfullscreenchange', () => {
+        const container = document.getElementById('gbc-container');
+        if (document.webkitFullscreenElement) {
+            container.classList.add('is-fullscreen');
+        } else {
+            container.classList.remove('is-fullscreen');
+        }
+    });
+
+    // Handle mozilla browsers
+    document.addEventListener('mozfullscreenchange', () => {
+        const container = document.getElementById('gbc-container');
+        if (document.mozFullScreenElement) {
+            container.classList.add('is-fullscreen');
+        } else {
+            container.classList.remove('is-fullscreen');
+        }
+    });
+
     function saveSettings() {
         localStorage.setItem('gbc_settings', JSON.stringify(app.settings));
     }

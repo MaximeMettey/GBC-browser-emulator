@@ -313,7 +313,7 @@ body {
 .modal {
     display: none;
     position: fixed;
-    z-index: 1000;
+    z-index: 10000;
     left: 0;
     top: 0;
     width: 100%;
@@ -471,54 +471,48 @@ input[type="range"] {
     }
 }
 
-/* Fullscreen Mode */
-:fullscreen #gbc-container,
-:-webkit-full-screen #gbc-container,
-:-moz-full-screen #gbc-container {
-    width: 90vh;
-    max-width: 95vw;
-    height: 95vh;
-    max-height: 100vh;
+/* Fullscreen Mode - Using JS class for better cross-browser support */
+#gbc-container.is-fullscreen {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90vh !important;
+    max-width: 95vw !important;
+    height: 95vh !important;
+    max-height: 100vh !important;
     border-radius: 15px;
     padding: 3vh;
+    z-index: 9999;
+    margin: 2.5vh 0;
 }
 
-:fullscreen #gbc-screen-area,
-:-webkit-full-screen #gbc-screen-area,
-:-moz-full-screen #gbc-screen-area {
+#gbc-container.is-fullscreen #gbc-screen-area {
     height: 36vh;
     padding: 2vh 2vw;
 }
 
-:fullscreen #emulator-canvas,
-:-webkit-full-screen #emulator-canvas,
-:-moz-full-screen #emulator-canvas {
+#gbc-container.is-fullscreen #emulator-canvas {
     width: 50vh;
     height: 45vh;
     max-width: 90vw;
 }
 
 /* Fullscreen: Scale D-Pad */
-:fullscreen #dpad,
-:-webkit-full-screen #dpad,
-:-moz-full-screen #dpad {
+#gbc-container.is-fullscreen #dpad {
     left: 10vh;
     top: 53vh;
     width: 18vh;
     height: 18vh;
 }
 
-:fullscreen .dpad-btn,
-:-webkit-full-screen .dpad-btn,
-:-moz-full-screen .dpad-btn {
+#gbc-container.is-fullscreen .dpad-btn {
     width: 6.3vh;
     height: 6.3vh;
     font-size: 3vh;
 }
 
-:fullscreen .dpad-center,
-:-webkit-full-screen .dpad-center,
-:-moz-full-screen .dpad-center {
+#gbc-container.is-fullscreen .dpad-center {
     width: 6.3vh;
     height: 6.3vh;
     left: 5.85vh;
@@ -526,92 +520,68 @@ input[type="range"] {
 }
 
 /* Fullscreen: Scale Action Buttons */
-:fullscreen #action-buttons,
-:-webkit-full-screen #action-buttons,
-:-moz-full-screen #action-buttons {
+#gbc-container.is-fullscreen #action-buttons {
     right: 10vh;
     top: 56vh;
 }
 
-:fullscreen .action-btn,
-:-webkit-full-screen .action-btn,
-:-moz-full-screen .action-btn {
+#gbc-container.is-fullscreen .action-btn {
     width: 9vh;
     height: 9vh;
     font-size: 3vh;
 }
 
-:fullscreen #btn-b,
-:-webkit-full-screen #btn-b,
-:-moz-full-screen #btn-b {
+#gbc-container.is-fullscreen #btn-b {
     left: -12.6vh;
     top: 2.7vh;
 }
 
 /* Fullscreen: Scale Special Buttons */
-:fullscreen #special-buttons,
-:-webkit-full-screen #special-buttons,
-:-moz-full-screen #special-buttons {
+#gbc-container.is-fullscreen #special-buttons {
     bottom: 14vh;
 }
 
-:fullscreen .special-btn,
-:-webkit-full-screen .special-btn,
-:-moz-full-screen .special-btn {
+#gbc-container.is-fullscreen .special-btn {
     width: 9vh;
     height: 2.7vh;
     font-size: 1.5vh;
 }
 
 /* Fullscreen: Scale Settings Button */
-:fullscreen #settings-btn,
-:-webkit-full-screen #settings-btn,
-:-moz-full-screen #settings-btn {
+#gbc-container.is-fullscreen #settings-btn {
     width: 7vh;
     height: 7vh;
     right: 4vh;
     bottom: 9vh;
 }
 
-:fullscreen #settings-btn svg,
-:-webkit-full-screen #settings-btn svg,
-:-moz-full-screen #settings-btn svg {
+#gbc-container.is-fullscreen #settings-btn svg {
     width: 3.5vh;
     height: 3.5vh;
 }
 
 /* Fullscreen: Scale Logo */
-:fullscreen .logo-text,
-:-webkit-full-screen .logo-text,
-:-moz-full-screen .logo-text {
+#gbc-container.is-fullscreen .logo-text {
     font-size: 3.2vh;
 }
 
-:fullscreen .logo-color,
-:-webkit-full-screen .logo-color,
-:-moz-full-screen .logo-color {
+#gbc-container.is-fullscreen .logo-color {
     font-size: 2.5vh;
 }
 
 /* Fullscreen: Scale Speaker */
-:fullscreen #speaker,
-:-webkit-full-screen #speaker,
-:-moz-full-screen #speaker {
+#gbc-container.is-fullscreen #speaker {
     bottom: 5vh;
     left: 5vh;
 }
 
-:fullscreen .speaker-line,
-:-webkit-full-screen .speaker-line,
-:-moz-full-screen .speaker-line {
+#gbc-container.is-fullscreen .speaker-line {
     width: 7vh;
     height: 0.4vh;
 }
 
 /* Fullscreen: Scale Power LED */
-:fullscreen #power-led,
-:-webkit-full-screen #power-led,
-:-moz-full-screen #power-led {
+#gbc-container.is-fullscreen #power-led {
     width: 1.5vh;
     height: 1.5vh;
     bottom: 1.4vh;
@@ -620,22 +590,16 @@ input[type="range"] {
 
 /* Fullscreen on Landscape Mobile - Use width instead of height */
 @media (orientation: landscape) and (max-height: 600px) {
-    :fullscreen #gbc-container,
-    :-webkit-full-screen #gbc-container,
-    :-moz-full-screen #gbc-container {
-        width: 55vw;
-        height: 95vh;
+    #gbc-container.is-fullscreen {
+        width: 55vw !important;
+        height: 95vh !important;
     }
 
-    :fullscreen #gbc-screen-area,
-    :-webkit-full-screen #gbc-screen-area,
-    :-moz-full-screen #gbc-screen-area {
+    #gbc-container.is-fullscreen #gbc-screen-area {
         height: 36vh;
     }
 
-    :fullscreen #emulator-canvas,
-    :-webkit-full-screen #emulator-canvas,
-    :-moz-full-screen #emulator-canvas {
+    #gbc-container.is-fullscreen #emulator-canvas {
         width: 40vw;
         height: 32vh;
         max-height: 90vh;
