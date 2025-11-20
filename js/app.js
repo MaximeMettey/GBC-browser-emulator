@@ -8,7 +8,7 @@
 
     // Application state
     const app = {
-        emulator: null,
+        emulatorReady: false,
         canvas: null,
         currentROM: null,
         settings: {
@@ -19,11 +19,12 @@
     // Initialize when DOM is ready
     document.addEventListener('DOMContentLoaded', init);
 
-    // Also listen for emulator ready event
+    // Listen for emulator ready event
     window.addEventListener('emulatorReady', onEmulatorReady);
+    window.addEventListener('emulatorError', onEmulatorError);
 
     function init() {
-        console.log('Initializing GBC Emulator...');
+        console.log('Initializing GBC Emulator App...');
 
         // Get canvas element
         app.canvas = document.getElementById('emulator-canvas');
@@ -35,29 +36,25 @@
 
         // Load saved settings
         loadSettings();
+
+        // Show loading message
+        showCanvasMessage('Loading emulator...');
     }
 
     function onEmulatorReady(event) {
-        console.log('Emulator ready:', event.detail);
+        console.log('✓ Emulator ready:', event.detail);
+        app.emulatorReady = true;
 
-        // Initialize emulator instance
-        if (window.GameBoyEmulator) {
-            app.emulator = new window.GameBoyEmulator(app.canvas);
-            console.log('Emulator instance created');
-        } else if (typeof gameboy !== 'undefined') {
-            // GameBoy-Online uses global 'gameboy' object
-            app.emulator = window;
-            console.log('Using GameBoy-Online emulator');
-        } else {
-            console.error('No emulator available');
-        }
+        // Show ready message
+        showCanvasMessage('Ready! Load a ROM to start');
+        showNotification('Emulator loaded successfully!');
     }
 
-    // Initialize emulator if scripts are already loaded
-    window.initializeEmulator = function() {
-        const event = new CustomEvent('emulatorReady', { detail: { type: 'cdn' } });
-        window.dispatchEvent(event);
-    };
+    function onEmulatorError(event) {
+        console.error('✗ Emulator error:', event.detail);
+        showCanvasMessage('Error loading emulator\nPlease refresh the page');
+        showNotification('Failed to load emulator: ' + event.detail.error, 'error');
+    }
 
     function initializeUI() {
         // Settings modal
@@ -90,8 +87,9 @@
             app.settings.volume = volume;
             saveSettings();
 
-            if (app.emulator && app.emulator.setVolume) {
-                app.emulator.setVolume(volume / 100);
+            // Update emulator volume
+            if (window.settings) {
+                window.settings[8] = parseInt(volume);
             }
         });
 
@@ -155,6 +153,10 @@
         const loadRomBtn = document.getElementById('load-rom-btn');
 
         loadRomBtn.addEventListener('click', () => {
+            if (!app.emulatorReady) {
+                showNotification('Emulator not ready yet. Please wait...', 'error');
+                return;
+            }
             romInput.click();
         });
 
@@ -171,96 +173,113 @@
         document.getElementById('state-input').addEventListener('change', uploadState);
     }
 
-    // Keyboard mapping
+    // Keyboard mapping for GameBoy-Online
     const keyMap = {
-        'ArrowUp': 'up',
-        'ArrowDown': 'down',
-        'ArrowLeft': 'left',
-        'ArrowRight': 'right',
-        'KeyZ': 'a',
-        'KeyX': 'b',
-        'Enter': 'start',
-        'Shift': 'select'
+        'ArrowUp': 38,
+        'ArrowDown': 40,
+        'ArrowLeft': 37,
+        'ArrowRight': 39,
+        'KeyZ': 90,      // A
+        'KeyX': 88,      // B
+        'Enter': 13,     // Start
+        'Shift': 16      // Select
     };
 
     function handleKeyDown(e) {
-        const key = keyMap[e.code];
-        if (key) {
+        const keyCode = keyMap[e.code];
+        if (keyCode && typeof GameBoyKeyDown === 'function') {
             e.preventDefault();
-            pressButton(key);
+            GameBoyKeyDown({ keyCode });
+
+            // Visual feedback
+            const buttonMap = {
+                38: 'up', 40: 'down', 37: 'left', 39: 'right',
+                90: 'a', 88: 'b', 13: 'start', 16: 'select'
+            };
+            const button = buttonMap[keyCode];
+            if (button) {
+                visualButtonPress(button);
+            }
         }
     }
 
     function handleKeyUp(e) {
-        const key = keyMap[e.code];
-        if (key) {
+        const keyCode = keyMap[e.code];
+        if (keyCode && typeof GameBoyKeyUp === 'function') {
             e.preventDefault();
-            releaseButton(key);
+            GameBoyKeyUp({ keyCode });
+
+            // Remove visual feedback
+            const buttonMap = {
+                38: 'up', 40: 'down', 37: 'left', 39: 'right',
+                90: 'a', 88: 'b', 13: 'start', 16: 'select'
+            };
+            const button = buttonMap[keyCode];
+            if (button) {
+                visualButtonRelease(button);
+            }
         }
     }
 
     function pressButton(button) {
-        // Visual feedback
+        visualButtonPress(button);
+
+        // Send to emulator
+        const keyCodeMap = {
+            'up': 38, 'down': 40, 'left': 37, 'right': 39,
+            'a': 90, 'b': 88, 'start': 13, 'select': 16
+        };
+
+        const keyCode = keyCodeMap[button];
+        if (keyCode && typeof GameBoyKeyDown === 'function') {
+            GameBoyKeyDown({ keyCode });
+        }
+    }
+
+    function releaseButton(button) {
+        visualButtonRelease(button);
+
+        // Send to emulator
+        const keyCodeMap = {
+            'up': 38, 'down': 40, 'left': 37, 'right': 39,
+            'a': 90, 'b': 88, 'start': 13, 'select': 16
+        };
+
+        const keyCode = keyCodeMap[button];
+        if (keyCode && typeof GameBoyKeyUp === 'function') {
+            GameBoyKeyUp({ keyCode });
+        }
+    }
+
+    function visualButtonPress(button) {
         const btn = document.querySelector(`[data-key="${button}"]`);
         if (btn) {
             btn.style.transform = btn.classList.contains('special-btn')
                 ? 'rotate(-20deg) translateY(2px)'
                 : 'translateY(3px)';
         }
-
-        // Send to emulator
-        if (app.emulator) {
-            if (app.emulator.pressButton) {
-                app.emulator.pressButton(button);
-            } else if (typeof GameBoyKeyDown === 'function') {
-                // GameBoy-Online key mapping
-                const keyCode = getGameBoyKeyCode(button);
-                if (keyCode !== null) {
-                    GameBoyKeyDown({ keyCode });
-                }
-            }
-        }
     }
 
-    function releaseButton(button) {
-        // Remove visual feedback
+    function visualButtonRelease(button) {
         const btn = document.querySelector(`[data-key="${button}"]`);
         if (btn) {
             btn.style.transform = btn.classList.contains('special-btn')
                 ? 'rotate(-20deg)'
                 : '';
         }
-
-        // Send to emulator
-        if (app.emulator) {
-            if (app.emulator.releaseButton) {
-                app.emulator.releaseButton(button);
-            } else if (typeof GameBoyKeyUp === 'function') {
-                const keyCode = getGameBoyKeyCode(button);
-                if (keyCode !== null) {
-                    GameBoyKeyUp({ keyCode });
-                }
-            }
-        }
-    }
-
-    function getGameBoyKeyCode(button) {
-        const codes = {
-            'up': 38,
-            'down': 40,
-            'left': 37,
-            'right': 39,
-            'a': 90,
-            'b': 88,
-            'start': 13,
-            'select': 16
-        };
-        return codes[button] || null;
     }
 
     function handleROMLoad(e) {
         const file = e.target.files[0];
         if (!file) return;
+
+        if (!app.emulatorReady) {
+            showNotification('Emulator not ready yet. Please wait...', 'error');
+            return;
+        }
+
+        const romStatus = document.getElementById('rom-status');
+        romStatus.textContent = 'Loading ROM...';
 
         const reader = new FileReader();
         reader.onload = function(event) {
@@ -269,104 +288,102 @@
 
             console.log('ROM loaded:', file.name, romData.byteLength, 'bytes');
 
-            // Load ROM into emulator
-            if (app.emulator) {
-                if (app.emulator.loadROM) {
-                    app.emulator.loadROM(romData);
-                } else if (typeof autoSave === 'function') {
-                    // GameBoy-Online initialization
-                    if (!window.gameboy) {
-                        start(app.canvas, romData);
+            try {
+                // Initialize emulator with ROM using GameBoy-Online's start() function
+                if (typeof start === 'function') {
+                    // Clear any previous emulation
+                    if (typeof clearLastEmulation === 'function') {
+                        clearLastEmulation();
                     }
-                }
 
-                // Start emulation
-                if (app.emulator.start) {
-                    app.emulator.start();
-                } else if (typeof run === 'function') {
-                    run();
-                }
+                    // Start emulation
+                    start(app.canvas, romData);
 
-                // Show success message
-                showNotification('ROM loaded successfully!');
-            } else {
-                showNotification('Emulator not ready. Please wait...', 'error');
+                    // Update UI
+                    romStatus.textContent = `Loaded: ${file.name}`;
+                    showNotification('ROM loaded! Game starting...');
+                    showCanvasMessage(''); // Clear message
+
+                } else {
+                    throw new Error('Emulator start() function not available');
+                }
+            } catch (error) {
+                console.error('Error starting ROM:', error);
+                romStatus.textContent = 'Error loading ROM';
+                showNotification('Failed to load ROM: ' + error.message, 'error');
             }
+        };
+
+        reader.onerror = function() {
+            romStatus.textContent = 'Error reading file';
+            showNotification('Failed to read ROM file', 'error');
         };
 
         reader.readAsArrayBuffer(file);
     }
 
     function saveState() {
-        if (!app.emulator) {
-            showNotification('No emulator instance', 'error');
+        if (!window.gameboy) {
+            showNotification('No game running', 'error');
             return;
         }
 
-        let stateData;
-
-        if (app.emulator.saveState) {
-            stateData = app.emulator.saveState();
-        } else if (typeof saveState === 'function' && window.gameboy) {
-            // GameBoy-Online save state
-            const state = window.gameboy.saveState();
-            stateData = JSON.stringify(state);
-        }
-
-        if (stateData) {
-            // Save to localStorage
-            localStorage.setItem('gbc_savestate', stateData);
-            showNotification('State saved to browser');
-        } else {
-            showNotification('Failed to save state', 'error');
+        try {
+            // Use GameBoy-Online's autoSave function
+            if (typeof autoSave === 'function') {
+                autoSave();
+                showNotification('State saved to browser');
+            } else {
+                throw new Error('Save function not available');
+            }
+        } catch (error) {
+            console.error('Error saving state:', error);
+            showNotification('Failed to save state: ' + error.message, 'error');
         }
     }
 
     function loadState() {
-        const stateData = localStorage.getItem('gbc_savestate');
-
-        if (!stateData) {
-            showNotification('No saved state found', 'error');
-            return;
-        }
-
-        if (app.emulator) {
-            if (app.emulator.loadState) {
-                app.emulator.loadState(stateData);
-            } else if (typeof returnFromState === 'function' && window.gameboy) {
-                try {
-                    const state = JSON.parse(stateData);
-                    window.gameboy.returnFromState(state);
-                } catch (error) {
-                    console.error('Failed to load state:', error);
-                    showNotification('Failed to load state', 'error');
-                    return;
-                }
+        try {
+            // GameBoy-Online automatically loads saves on start
+            // So we just need to reload the ROM if one is loaded
+            if (app.currentROM && typeof start === 'function') {
+                start(app.canvas, app.currentROM);
+                showNotification('State loaded from browser');
+            } else {
+                showNotification('No ROM loaded', 'error');
             }
-
-            showNotification('State loaded from browser');
+        } catch (error) {
+            console.error('Error loading state:', error);
+            showNotification('Failed to load state: ' + error.message, 'error');
         }
     }
 
     function downloadState() {
-        const stateData = localStorage.getItem('gbc_savestate');
+        // Get save data from localStorage
+        const saveName = 'FREEZE_' + window.gameboy?.name || 'unknown';
+        const saveData = localStorage.getItem(saveName);
 
-        if (!stateData) {
+        if (!saveData) {
             showNotification('No saved state to download', 'error');
             return;
         }
 
-        const blob = new Blob([stateData], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `gbc_savestate_${Date.now()}.sav`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        try {
+            const blob = new Blob([saveData], { type: 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `gbc_savestate_${Date.now()}.sav`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
 
-        showNotification('State file downloaded');
+            showNotification('State file downloaded');
+        } catch (error) {
+            console.error('Error downloading state:', error);
+            showNotification('Failed to download state', 'error');
+        }
     }
 
     function uploadState(e) {
@@ -377,26 +394,16 @@
         reader.onload = function(event) {
             const stateData = event.target.result;
 
-            // Save to localStorage
-            localStorage.setItem('gbc_savestate', stateData);
+            try {
+                // Save to localStorage
+                const saveName = 'FREEZE_' + (window.gameboy?.name || 'unknown');
+                localStorage.setItem(saveName, stateData);
 
-            // Load into emulator
-            if (app.emulator) {
-                if (app.emulator.loadState) {
-                    app.emulator.loadState(stateData);
-                } else if (typeof returnFromState === 'function' && window.gameboy) {
-                    try {
-                        const state = JSON.parse(stateData);
-                        window.gameboy.returnFromState(state);
-                    } catch (error) {
-                        console.error('Failed to load state:', error);
-                        showNotification('Failed to load state', 'error');
-                        return;
-                    }
-                }
+                showNotification('State uploaded. Reload ROM to use it.');
+            } catch (error) {
+                console.error('Error uploading state:', error);
+                showNotification('Failed to upload state', 'error');
             }
-
-            showNotification('State uploaded and loaded');
         };
 
         reader.readAsText(file);
@@ -430,9 +437,32 @@
                 const volumeValue = document.getElementById('volume-value');
                 volumeSlider.value = app.settings.volume;
                 volumeValue.textContent = app.settings.volume + '%';
+
+                // Apply to emulator settings
+                if (window.settings) {
+                    window.settings[8] = parseInt(app.settings.volume);
+                }
             } catch (error) {
                 console.error('Failed to load settings:', error);
             }
+        }
+    }
+
+    function showCanvasMessage(message) {
+        const ctx = app.canvas.getContext('2d');
+        ctx.fillStyle = '#9bbc0f';
+        ctx.fillRect(0, 0, app.canvas.width, app.canvas.height);
+
+        if (message) {
+            ctx.fillStyle = '#0f380f';
+            ctx.font = '12px monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const lines = message.split('\n');
+            lines.forEach((line, i) => {
+                ctx.fillText(line, app.canvas.width / 2, app.canvas.height / 2 + (i - lines.length / 2 + 0.5) * 15);
+            });
         }
     }
 
@@ -453,6 +483,8 @@
             z-index: 10000;
             font-weight: bold;
             animation: slideIn 0.3s ease;
+            max-width: 80%;
+            text-align: center;
         `;
 
         document.body.appendChild(notification);
@@ -461,7 +493,9 @@
         setTimeout(() => {
             notification.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
-                document.body.removeChild(notification);
+                if (notification.parentNode) {
+                    document.body.removeChild(notification);
+                }
             }, 300);
         }, 3000);
     }
